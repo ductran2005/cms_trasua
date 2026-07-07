@@ -1,0 +1,48 @@
+{
+  "common": {
+    "language": "Ngôn ngữ",
+    "vietnamese": "Tiếng Việt",
+    "english": "English"
+  },
+  "meta": {
+    "title": "AURATEA CMS",
+    "description": "Hệ thống quản trị trà sữa AURATEA."
+  },
+  "nav": {
+    "overview": "Tổng quan",
+    "menuManagement": "Quản lý menu",
+    "operations": "Vận hành",
+    "content": "Nội dung",
+    "system": "Hệ thống",
+    "dashboard": "Dashboard",
+    "orders": "Đơn hàng",
+    "products": "Sản phẩm",
+    "categories": "Danh mục",
+    "toppings": "Topping",
+    "materials": "Nguyên vật liệu",
+    "staff": "Nhân viên",
+    "offers": "Ưu đãi",
+    "homeContent": "Nội dung trang chủ",
+    "media": "Thư viện ảnh",
+    "settings": "Cài đặt"
+  },
+  "topbar": {
+    "searchPlaceholder": "Tìm sản phẩm, nhân viên, mã đơn...",
+    "admin": "Admin",
+    "administrator": "Quản trị viên"
+  },
+  "login": {
+    "headline": "Quản trị trà sữa gọn, đẹp và thực tế.",
+    "description": "Hệ thống quản trị CMS dành riêng cho landing page trà sữa AURATEA.",
+    "title": "Đăng nhập Admin",
+    "hint": "Dùng mật khẩu demo bên dưới để truy cập giao diện quản trị.",
+    "passwordLabel": "Mật khẩu demo",
+    "passwordPlaceholder": "Nhập admin123",
+    "error": "Sai mật khẩu. Mật khẩu demo mặc định là admin123",
+    "submit": "Đăng nhập CMS",
+    "success": "Đăng nhập thành công"
+  },
+  "toast": {
+    "mongoSaveError": "Không thể lưu MongoDB, đã lưu tạm trên trình duyệt"
+  }
+}

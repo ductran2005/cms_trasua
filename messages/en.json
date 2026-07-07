@@ -1,0 +1,48 @@
+{
+  "common": {
+    "language": "Language",
+    "vietnamese": "Tiếng Việt",
+    "english": "English"
+  },
+  "meta": {
+    "title": "AURATEA CMS",
+    "description": "AURATEA milk tea administration system."
+  },
+  "nav": {
+    "overview": "Overview",
+    "menuManagement": "Menu management",
+    "operations": "Operations",
+    "content": "Content",
+    "system": "System",
+    "dashboard": "Dashboard",
+    "orders": "Orders",
+    "products": "Products",
+    "categories": "Categories",
+    "toppings": "Toppings",
+    "materials": "Materials",
+    "staff": "Staff",
+    "offers": "Offers",
+    "homeContent": "Homepage content",
+    "media": "Media library",
+    "settings": "Settings"
+  },
+  "topbar": {
+    "searchPlaceholder": "Search products, staff, order IDs...",
+    "admin": "Admin",
+    "administrator": "Administrator"
+  },
+  "login": {
+    "headline": "Clean, practical milk tea administration.",
+    "description": "A CMS built for the AURATEA milk tea landing page.",
+    "title": "Admin login",
+    "hint": "Use the demo password below to access the admin interface.",
+    "passwordLabel": "Demo password",
+    "passwordPlaceholder": "Enter admin123",
+    "error": "Wrong password. The default demo password is admin123",
+    "submit": "Log in to CMS",
+    "success": "Logged in successfully"
+  },
+  "toast": {
+    "mongoSaveError": "Could not save to MongoDB. Saved locally in the browser."
+  }
+}
