@@ -18,7 +18,7 @@ export const initialSampleData: AppDatabase = {
       tag: "Bán chạy",
       priceM: 39000,
       priceL: 49000,
-      image: "https://images.unsplash.com/photo-1595981267035-7b04ca84a82d?q=80&w=900&auto=format&fit=crop",
+      image: "/milktea-assets/clean-brown-sugar-cutout.png",
       desc: "Trà sữa thơm đậm, sữa tươi béo nhẹ và trân châu đường đen nấu mới mỗi ngày.",
       active: true
     },
@@ -29,7 +29,7 @@ export const initialSampleData: AppDatabase = {
       tag: "Vị thanh",
       priceM: 45000,
       priceL: 55000,
-      image: "https://images.unsplash.com/photo-1558857563-b371033873b8?q=80&w=900&auto=format&fit=crop",
+      image: "/milktea-assets/clean-matcha-cutout.png",
       desc: "Matcha xanh thơm, lớp kem sữa béo nhẹ và hậu vị mát hợp ngày nắng.",
       active: true
     },
@@ -40,7 +40,7 @@ export const initialSampleData: AppDatabase = {
       tag: "Món mới",
       priceM: 42000,
       priceL: 52000,
-      image: "https://images.unsplash.com/photo-1631308490077-18109b69e085?q=80&w=900&auto=format&fit=crop",
+      image: "/milktea-assets/clean-taro-cutout.png",
       desc: "Khoai môn tím thơm, chất sữa mịn và màu ly nổi bật.",
       active: true
     },
@@ -51,7 +51,7 @@ export const initialSampleData: AppDatabase = {
       tag: "Fresh",
       priceM: 43000,
       priceL: 53000,
-      image: "https://images.unsplash.com/photo-1577805947697-89e18249d767?q=80&w=900&auto=format&fit=crop",
+      image: "/milktea-assets/clean-oolong-peach-cutout.png",
       desc: "Trà ô long thơm nhẹ kết hợp đào tươi, thanh mát và dễ uống.",
       active: true
     }
@@ -87,9 +87,10 @@ export const initialSampleData: AppDatabase = {
     { id: 'off3', title: "Giảm 20% cho sinh viên", desc: "Cần xuất trình thẻ sinh viên.", start: "2026-07-01", end: "2026-07-31", active: true }
   ],
   media: [
-    { id: 'm1', name: "Brown Sugar", url: "https://images.unsplash.com/photo-1595981267035-7b04ca84a82d?q=80&w=900&auto=format&fit=crop" },
-    { id: 'm2', name: "Matcha", url: "https://images.unsplash.com/photo-1558857563-b371033873b8?q=80&w=900&auto=format&fit=crop" },
-    { id: 'm3', name: "Fruit Tea", url: "https://images.unsplash.com/photo-1577805947697-89e18249d767?q=80&w=900&auto=format&fit=crop" }
+    { id: 'm1', name: "Trà sữa đường đen", url: "/milktea-assets/clean-brown-sugar-cutout.png" },
+    { id: 'm2', name: "Matcha kem sữa", url: "/milktea-assets/clean-matcha-cutout.png" },
+    { id: 'm3', name: "Khoai môn mây tím", url: "/milktea-assets/clean-taro-cutout.png" },
+    { id: 'm4', name: "Ô long đào", url: "/milktea-assets/clean-oolong-peach-cutout.png" }
   ],
   content: {
     heroTitleVi: "Trà thơm đúng vị, ngọt vừa đúng gu.",
@@ -124,7 +125,41 @@ export const loadDatabase = (): AppDatabase => {
     return cloneInitialData();
   }
   try {
-    return JSON.parse(raw);
+    const data = JSON.parse(raw) as AppDatabase;
+    let updated = false;
+    const unsplashMapping: Record<string, string> = {
+      "https://images.unsplash.com/photo-1558857563-b371033873b8?q=80&w=900&auto=format&fit=crop": "/milktea-assets/clean-brown-sugar-cutout.png",
+      "https://images.unsplash.com/photo-1515823064-d6e0c04616a7?q=80&w=900&auto=format&fit=crop": "/milktea-assets/clean-matcha-cutout.png",
+      "https://images.unsplash.com/photo-1615478503562-ec2d8aa0e24e?q=80&w=900&auto=format&fit=crop": "/milktea-assets/clean-taro-cutout.png",
+      "https://images.unsplash.com/photo-1499638673689-79a0b5115d87?q=80&w=900&auto=format&fit=crop": "/milktea-assets/clean-oolong-peach-cutout.png"
+    };
+
+    if (data.products && Array.isArray(data.products)) {
+      data.products = data.products.map(p => {
+        const localImage = unsplashMapping[p.image];
+        if (localImage) {
+          p.image = localImage;
+          updated = true;
+        }
+        return p;
+      });
+    }
+
+    if (data.media && Array.isArray(data.media)) {
+      data.media = data.media.map(m => {
+        const localUrl = unsplashMapping[m.url];
+        if (localUrl) {
+          m.url = localUrl;
+          updated = true;
+        }
+        return m;
+      });
+    }
+
+    if (updated) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+    return data;
   } catch (e) {
     console.error('Error parsing stored database, resetting to sample.', e);
     return cloneInitialData();
