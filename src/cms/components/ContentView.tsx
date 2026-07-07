@@ -1,4 +1,5 @@
 import { Globe, Sparkles } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import React, { useState } from 'react';
 
 import { type AppDatabase, type ContentState } from '../types';
@@ -10,6 +11,8 @@ interface ContentViewProps {
 }
 
 export const ContentView: React.FC<ContentViewProps> = ({ db, onUpdateContent, onToast }) => {
+  const t = useTranslations('content');
+  const tCommon = useTranslations('common');
   const [heroTitleVi, setHeroTitleVi] = useState(db.content.heroTitleVi);
   const [heroDescVi, setHeroDescVi] = useState(db.content.heroDescVi);
   const [heroTitleEn, setHeroTitleEn] = useState(db.content.heroTitleEn);
@@ -33,15 +36,15 @@ export const ContentView: React.FC<ContentViewProps> = ({ db, onUpdateContent, o
       ctaButton: ctaButton.trim(),
     };
     onUpdateContent(nextContent);
-    onToast('Đã lưu nội dung trang chủ');
+    onToast(t('saved'));
   };
 
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-light tracking-tight mb-2">Nội dung trang chủ</h1>
-          <p className="text-[#8b7668]">Chỉnh hero, story, CTA và text i18n Việt / Anh.</p>
+          <h1 className="text-3xl font-light tracking-tight mb-2">{t('title')}</h1>
+          <p className="text-[#8b7668]">{t('description')}</p>
         </div>
       </div>
 
@@ -52,19 +55,19 @@ export const ContentView: React.FC<ContentViewProps> = ({ db, onUpdateContent, o
             {/* Vietnamese Card */}
             <div className="border border-black/5 p-4 rounded-2xl bg-[#fffdf8] space-y-4">
               <h3 className="text-base font-medium text-amber-900 flex items-center gap-1.5">
-                <Globe className="w-4 h-4" /> Hero — Tiếng Việt
+                <Globe className="w-4 h-4" /> {t('heroVi')}
               </h3>
               <div className="flex flex-col gap-1">
-                <label className="text-[11px] text-[#8b7668]">Tiêu đề</label>
-                <input 
+                <label className="text-[11px] text-[#8b7668]">{t('fieldTitle')}</label>
+                <input
                   value={heroTitleVi}
                   onChange={e => setHeroTitleVi(e.target.value)}
                   className="w-full px-3 py-1.5 border border-black/10 rounded-lg outline-none bg-white text-sm"
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-[11px] text-[#8b7668]">Mô tả</label>
-                <textarea 
+                <label className="text-[11px] text-[#8b7668]">{t('fieldDesc')}</label>
+                <textarea
                   value={heroDescVi}
                   onChange={e => setHeroDescVi(e.target.value)}
                   className="w-full px-3 py-1.5 border border-black/10 rounded-lg outline-none bg-white text-sm min-h-[70px] resize-y"
@@ -75,19 +78,19 @@ export const ContentView: React.FC<ContentViewProps> = ({ db, onUpdateContent, o
             {/* English Card */}
             <div className="border border-black/5 p-4 rounded-2xl bg-[#fffdf8] space-y-4">
               <h3 className="text-base font-medium text-amber-900 flex items-center gap-1.5">
-                <Globe className="w-4 h-4" /> Hero — English
+                <Globe className="w-4 h-4" /> {t('heroEn')}
               </h3>
               <div className="flex flex-col gap-1">
-                <label className="text-[11px] text-[#8b7668]">Title</label>
-                <input 
+                <label className="text-[11px] text-[#8b7668]">{t('fieldTitle')}</label>
+                <input
                   value={heroTitleEn}
                   onChange={e => setHeroTitleEn(e.target.value)}
                   className="w-full px-3 py-1.5 border border-black/10 rounded-lg outline-none bg-white text-sm"
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-[11px] text-[#8b7668]">Description</label>
-                <textarea 
+                <label className="text-[11px] text-[#8b7668]">{t('fieldDesc')}</label>
+                <textarea
                   value={heroDescEn}
                   onChange={e => setHeroDescEn(e.target.value)}
                   className="w-full px-3 py-1.5 border border-black/10 rounded-lg outline-none bg-white text-sm min-h-[70px] resize-y"
@@ -98,19 +101,19 @@ export const ContentView: React.FC<ContentViewProps> = ({ db, onUpdateContent, o
 
           {/* Story Card */}
           <div className="border border-black/5 p-4 rounded-2xl bg-[#fffdf8] space-y-4">
-            <h3 className="text-base font-medium text-amber-900">Story Section (Câu chuyện)</h3>
+            <h3 className="text-base font-medium text-amber-900">{t('storySection')}</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="md:col-span-1 flex flex-col gap-1">
-                <label className="text-[11px] text-[#8b7668]">Tiêu đề</label>
-                <input 
+                <label className="text-[11px] text-[#8b7668]">{t('fieldTitle')}</label>
+                <input
                   value={storyTitle}
                   onChange={e => setStoryTitle(e.target.value)}
                   className="w-full px-3 py-1.5 border border-black/10 rounded-lg outline-none bg-white text-sm"
                 />
               </div>
               <div className="md:col-span-2 flex flex-col gap-1">
-                <label className="text-[11px] text-[#8b7668]">Nội dung mô tả</label>
-                <textarea 
+                <label className="text-[11px] text-[#8b7668]">{t('storyDesc')}</label>
+                <textarea
                   value={storyDesc}
                   onChange={e => setStoryDesc(e.target.value)}
                   className="w-full px-3 py-1.5 border border-black/10 rounded-lg outline-none bg-white text-sm min-h-[44px] resize-y"
@@ -121,19 +124,19 @@ export const ContentView: React.FC<ContentViewProps> = ({ db, onUpdateContent, o
 
           {/* CTA Card */}
           <div className="border border-black/5 p-4 rounded-2xl bg-[#fffdf8] space-y-4">
-            <h3 className="text-base font-medium text-amber-900">CTA Section (Kêu gọi đặt hàng)</h3>
+            <h3 className="text-base font-medium text-amber-900">{t('ctaSection')}</h3>
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
-                <label className="text-[11px] text-[#8b7668]">Dòng chữ CTA</label>
-                <input 
+                <label className="text-[11px] text-[#8b7668]">{t('ctaText')}</label>
+                <input
                   value={ctaText}
                   onChange={e => setCtaText(e.target.value)}
                   className="w-full px-3 py-1.5 border border-black/10 rounded-lg outline-none bg-white text-sm"
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-[11px] text-[#8b7668]">Chữ trên nút</label>
-                <input 
+                <label className="text-[11px] text-[#8b7668]">{t('ctaButton')}</label>
+                <input
                   value={ctaButton}
                   onChange={e => setCtaButton(e.target.value)}
                   className="w-full px-3 py-1.5 border border-black/10 rounded-lg outline-none bg-white text-sm"
@@ -142,30 +145,30 @@ export const ContentView: React.FC<ContentViewProps> = ({ db, onUpdateContent, o
             </div>
           </div>
 
-          <button 
+          <button
             onClick={handleSave}
             className="px-6 py-2.5 bg-[#daa94f] text-white rounded-xl hover:opacity-95 transition-all text-sm font-medium shadow-sm"
           >
-            Lưu nội dung
+            {t('save')}
           </button>
         </div>
 
         {/* Preview Area */}
         <div className="bg-white border border-black/8 rounded-3xl p-6 lg:col-span-5 shadow-sm space-y-4">
           <div className="flex items-center justify-between border-b border-black/5 pb-2">
-            <h2 className="text-xl">Preview Hero</h2>
+            <h2 className="text-xl">{t('preview')}</h2>
             <div className="flex rounded-lg border border-black/10 overflow-hidden bg-gray-50 text-[11px]">
-              <button 
+              <button
                 onClick={() => setPreviewLang('vi')}
                 className={`px-2.5 py-1 ${previewLang === 'vi' ? 'bg-[#321b12] text-white' : 'hover:bg-gray-100 text-gray-600'}`}
               >
-                Tiếng Việt
+                {tCommon('vietnamese')}
               </button>
-              <button 
+              <button
                 onClick={() => setPreviewLang('en')}
                 className={`px-2.5 py-1 ${previewLang === 'en' ? 'bg-[#321b12] text-white' : 'hover:bg-gray-100 text-gray-600'}`}
               >
-                English
+                {tCommon('english')}
               </button>
             </div>
           </div>
@@ -181,7 +184,7 @@ export const ContentView: React.FC<ContentViewProps> = ({ db, onUpdateContent, o
             </div>
 
             {/* Preview Canvas */}
-            <div 
+            <div
               className="min-h-[280px] p-6 flex flex-col justify-end text-white bg-cover bg-center relative"
               style={{
                 backgroundImage: `linear-gradient(to top, rgba(50,27,18,0.95) 0%, rgba(50,27,18,0.4) 60%, transparent 100%), url("https://images.unsplash.com/photo-1595981267035-7b04ca84a82d?q=80&w=1000&auto=format&fit=crop")`
@@ -202,7 +205,7 @@ export const ContentView: React.FC<ContentViewProps> = ({ db, onUpdateContent, o
                 </p>
                 <div className="mt-4 flex gap-2">
                   <button className="px-4 py-1.5 bg-amber-400 hover:bg-amber-500 text-black text-xs rounded-full shadow-sm">
-                    {ctaButton || 'Đặt trà'}
+                    {ctaButton || t('ctaFallback')}
                   </button>
                 </div>
               </div>

@@ -1,4 +1,5 @@
 import { Search } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import React, { useState } from 'react';
 
 import { uid } from '../data';
@@ -10,10 +11,23 @@ interface OrdersViewProps {
   onToast: (msg: string) => void;
 }
 
-const ORDER_STATUSES = ['Äang pha', 'Äang giao', 'HoÃ n thÃ nh', 'ÄÃ£ há»§y'];
 const NO_TOPPING = '__none__';
+const STATUS_KEYS = ['preparing', 'delivering', 'completed', 'canceled'] as const;
+type StatusKey = (typeof STATUS_KEYS)[number];
+
+function getStatusKey(status: string): StatusKey {
+  if (STATUS_KEYS.includes(status as StatusKey)) return status as StatusKey;
+
+  const normalized = status.toLowerCase();
+  if (normalized.includes('giao')) return 'delivering';
+  if (normalized.includes('huy') || normalized.includes('hủy') || normalized.includes('cancel')) return 'canceled';
+  if (normalized.includes('ho') || normalized.includes('xong') || normalized.includes('complete')) return 'completed';
+  return 'preparing';
+}
 
 export const OrdersView: React.FC<OrdersViewProps> = ({ db, onUpdateOrders, onToast }) => {
+  const t = useTranslations('orders');
+  const locale = useLocale();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -29,39 +43,37 @@ export const OrdersView: React.FC<OrdersViewProps> = ({ db, onUpdateOrders, onTo
   const productPrice = selectedProduct ? (size === 'L' ? selectedProduct.priceL : selectedProduct.priceM) : 0;
   const toppingPrice = selectedTopping?.price ?? 0;
   const computedTotal = (productPrice + toppingPrice) * parsedQuantity;
-  const toppingName = selectedTopping?.name ?? 'KhÃ´ng topping';
+  const toppingName = selectedTopping?.name ?? t('noTopping');
   const computedItems = selectedProduct
     ? `${selectedProduct.name} size ${size} x${parsedQuantity}${selectedTopping ? `, topping ${selectedTopping.name}` : ''}`
     : '';
 
-  const formatMoney = (n: number) => `${n.toLocaleString('vi-VN')}Ä‘`;
+  const formatMoney = (n: number) => `${n.toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN')}đ`;
 
-  const getBadgeClass = (orderStatus: string) => {
-    switch (orderStatus) {
-      case 'HoÃ n thÃ nh':
-      case 'HoÃƒÂ n thÃƒÂ nh':
+  const getStatusLabel = (status: string) => t(`status.${getStatusKey(status)}`);
+
+  const getBadgeClass = (status: string) => {
+    switch (getStatusKey(status)) {
+      case 'completed':
         return 'bg-green-100 text-green-800';
-      case 'Äang giao':
-      case 'Ã„Âang giao':
+      case 'delivering':
         return 'bg-blue-100 text-blue-800';
-      case 'Äang pha':
-      case 'Ã„Âang pha':
+      case 'preparing':
         return 'bg-amber-100 text-amber-800';
-      case 'ÄÃ£ há»§y':
-      case 'Ã„ÂÃƒÂ£ hÃ¡Â»Â§y':
+      case 'canceled':
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const handleUpdateStatus = async (id: string, nextStatus: string) => {
+  const handleUpdateStatus = async (id: string, nextStatus: StatusKey) => {
     const next = db.orders.map(order => (order.id === id ? { ...order, status: nextStatus } : order));
     try {
       await onUpdateOrders(next);
-      onToast(`ÄÃ£ lÆ°u tráº¡ng thÃ¡i "${nextStatus}" vÃ o MongoDB`);
+      onToast(t('statusSaved', { status: t(`status.${nextStatus}`) }));
     } catch {
-      onToast('KhÃ´ng thá»ƒ lÆ°u tráº¡ng thÃ¡i Ä‘Æ¡n hÃ ng vÃ o MongoDB');
+      onToast(t('statusSaveError'));
     }
   };
 
@@ -77,7 +89,7 @@ export const OrdersView: React.FC<OrdersViewProps> = ({ db, onUpdateOrders, onTo
     e.preventDefault();
 
     if (!customer.trim() || !selectedProduct || parsedQuantity < 1) {
-      alert('Vui lÃ²ng nháº­p khÃ¡ch hÃ ng, chá»n sáº£n pháº©m vÃ  sá»‘ lÆ°á»£ng há»£p lá»‡.');
+      alert(t('invalidForm'));
       return;
     }
 
@@ -90,17 +102,17 @@ export const OrdersView: React.FC<OrdersViewProps> = ({ db, onUpdateOrders, onTo
       quantity: parsedQuantity,
       toppingName,
       total: computedTotal,
-      status: ORDER_STATUSES[0] ?? 'Äang pha',
+      status: 'preparing',
       time: new Date().toTimeString().slice(0, 5),
     };
 
     try {
       await onUpdateOrders([nextOrder, ...db.orders]);
-      onToast('ÄÃ£ thÃªm Ä‘Æ¡n hÃ ng má»›i vÃ  lÆ°u vÃ o MongoDB');
+      onToast(t('orderSaved'));
       clearForm();
       setIsFormOpen(false);
     } catch {
-      onToast('KhÃ´ng thá»ƒ lÆ°u Ä‘Æ¡n hÃ ng vÃ o MongoDB');
+      onToast(t('orderSaveError'));
     }
   };
 
@@ -112,7 +124,7 @@ export const OrdersView: React.FC<OrdersViewProps> = ({ db, onUpdateOrders, onTo
       order.items.toLowerCase().includes(term) ||
       (order.productName ?? '').toLowerCase().includes(term) ||
       (order.toppingName ?? '').toLowerCase().includes(term);
-    const matchStatus = statusFilter ? order.status === statusFilter : true;
+    const matchStatus = statusFilter ? getStatusKey(order.status) === statusFilter : true;
     return matchSearch && matchStatus;
   });
 
@@ -120,32 +132,81 @@ export const OrdersView: React.FC<OrdersViewProps> = ({ db, onUpdateOrders, onTo
     <div>
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-light tracking-tight mb-2">ÄÆ¡n hÃ ng</h1>
-          <p className="text-[#8b7668]">Quáº£n lÃ½ Ä‘Æ¡n theo sáº£n pháº©m, size, sá»‘ lÆ°á»£ng, topping vÃ  tráº¡ng thÃ¡i.</p>
+          <h1 className="text-3xl font-light tracking-tight mb-2">{t('title')}</h1>
+          <p className="text-[#8b7668]">{t('description')}</p>
         </div>
         <button
           onClick={() => setIsFormOpen(value => !value)}
           className="self-start sm:self-auto px-4 py-2.5 bg-[#321b12] text-white rounded-xl text-sm hover:bg-[#47271b] transition-all shadow-sm"
         >
-          {isFormOpen ? 'ÄÃ³ng form' : '+ ThÃªm Ä‘Æ¡n hÃ ng'}
+          {isFormOpen ? t('closeForm') : t('addOrder')}
         </button>
       </div>
 
       <div className={isFormOpen ? 'grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_380px] gap-6 items-start' : ''}>
         {isFormOpen && (
           <form onSubmit={handleAddOrder} className="bg-white border border-black/8 rounded-3xl p-6 shadow-sm xl:col-start-2 xl:row-start-1 xl:sticky xl:top-24">
-            <h2 className="text-xl mb-4">ThÃªm mÃ³n</h2>
+            <h2 className="text-xl mb-4">{t('addItem')}</h2>
 
             <div className="space-y-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs text-[#6a3d29] font-medium">{t('customer')}</label>
+                <input
+                  value={customer}
+                  onChange={e => setCustomer(e.target.value)}
+                  className="px-3 py-2 border border-black/10 rounded-xl outline-none bg-white focus:border-[#c98632] text-sm"
+                  placeholder={t('customerPlaceholder')}
+                />
+              </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs text-[#6a3d29] font-medium">Topping</label>
+                <label className="text-xs text-[#6a3d29] font-medium">{t('product')}</label>
+                <select
+                  value={selectedProduct?.id ?? ''}
+                  onChange={e => setProductId(e.target.value)}
+                  className="px-3 py-2 border border-black/10 rounded-xl outline-none bg-white text-sm"
+                >
+                  {db.products.map(product => (
+                    <option key={product.id} value={product.id}>
+                      {product.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs text-[#6a3d29] font-medium">{t('size')}</label>
+                  <select
+                    value={size}
+                    onChange={e => setSize(e.target.value as 'M' | 'L')}
+                    className="px-3 py-2 border border-black/10 rounded-xl outline-none bg-white text-sm"
+                  >
+                    <option value="M">M - {formatMoney(selectedProduct?.priceM ?? 0)}</option>
+                    <option value="L">L - {formatMoney(selectedProduct?.priceL ?? 0)}</option>
+                  </select>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs text-[#6a3d29] font-medium">{t('quantity')}</label>
+                  <input
+                    value={quantity}
+                    onChange={e => setQuantity(e.target.value)}
+                    type="number"
+                    min="1"
+                    className="px-3 py-2 border border-black/10 rounded-xl outline-none bg-white focus:border-[#c98632] text-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs text-[#6a3d29] font-medium">{t('topping')}</label>
                 <select
                   value={toppingId}
                   onChange={e => setToppingId(e.target.value)}
                   className="px-3 py-2 border border-black/10 rounded-xl outline-none bg-white text-sm"
                 >
-                  <option value={NO_TOPPING}>KhÃ´ng topping</option>
+                  <option value={NO_TOPPING}>{t('noTopping')}</option>
                   {db.toppings.map(topping => (
                     <option key={topping.id} value={topping.id}>
                       {topping.name} - {formatMoney(topping.price)}
@@ -155,10 +216,10 @@ export const OrdersView: React.FC<OrdersViewProps> = ({ db, onUpdateOrders, onTo
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs text-[#6a3d29] font-medium">Chi tiáº¿t mÃ³n</label>
+                <label className="text-xs text-[#6a3d29] font-medium">{t('itemDetail')}</label>
                 <div className="px-3 py-2 border border-black/10 rounded-xl bg-amber-50/20 text-sm min-h-[70px] leading-relaxed">
-                  <div>{computedItems || 'Chá»n sáº£n pháº©m Ä‘á»ƒ táº¡o chi tiáº¿t mÃ³n'}</div>
-                  <div className="mt-1 text-[#8b7668]">Tá»•ng: {formatMoney(computedTotal)}</div>
+                  <div>{computedItems || t('chooseProduct')}</div>
+                  <div className="mt-1 text-[#8b7668]">{t('total')}: {formatMoney(computedTotal)}</div>
                 </div>
               </div>
             </div>
@@ -172,13 +233,13 @@ export const OrdersView: React.FC<OrdersViewProps> = ({ db, onUpdateOrders, onTo
                 }}
                 className="px-4 py-2 border border-black/10 rounded-xl text-sm hover:bg-[#fff8ef] transition-all"
               >
-                Há»§y
+                {t('cancel')}
               </button>
               <button
                 type="submit"
                 className="px-4 py-2 bg-[#daa94f] text-white rounded-xl text-sm hover:opacity-95 transition-all shadow-xs"
               >
-                LÆ°u Ä‘Æ¡n hÃ ng
+                {t('saveOrder')}
               </button>
             </div>
           </form>
@@ -193,7 +254,7 @@ export const OrdersView: React.FC<OrdersViewProps> = ({ db, onUpdateOrders, onTo
               <input
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                placeholder="TÃ¬m mÃ£ Ä‘Æ¡n, khÃ¡ch hÃ ng, sáº£n pháº©m hoáº·c topping..."
+                placeholder={t('searchPlaceholder')}
                 className="w-full pl-10 pr-4 py-2 border border-black/10 rounded-xl outline-none bg-amber-50/5 focus:border-[#c98632] transition-all text-sm"
               />
             </div>
@@ -202,10 +263,10 @@ export const OrdersView: React.FC<OrdersViewProps> = ({ db, onUpdateOrders, onTo
               onChange={e => setStatusFilter(e.target.value)}
               className="px-3 py-2 border border-black/10 rounded-xl outline-none bg-white text-sm min-w-[180px]"
             >
-              <option value="">Táº¥t cáº£ tráº¡ng thÃ¡i</option>
-              {ORDER_STATUSES.map(item => (
-                <option key={item} value={item}>
-                  {item}
+              <option value="">{t('allStatuses')}</option>
+              {STATUS_KEYS.map(statusKey => (
+                <option key={statusKey} value={statusKey}>
+                  {t(`status.${statusKey}`)}
                 </option>
               ))}
             </select>
@@ -215,16 +276,16 @@ export const OrdersView: React.FC<OrdersViewProps> = ({ db, onUpdateOrders, onTo
             <table className="w-full text-left border-collapse min-w-[980px]">
               <thead>
                 <tr className="border-b border-black/5 bg-[#fff8ef]">
-                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">MÃ£ Ä‘Æ¡n</th>
-                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">KhÃ¡ch hÃ ng</th>
-                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">Sáº£n pháº©m</th>
-                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">Size</th>
-                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">SL</th>
-                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">Topping</th>
-                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">Tá»•ng tiá»n</th>
-                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">Thá»i gian</th>
-                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">Tráº¡ng thÃ¡i</th>
-                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668] text-right">Chuyá»ƒn tráº¡ng thÃ¡i</th>
+                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">{t('columns.orderId')}</th>
+                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">{t('columns.customer')}</th>
+                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">{t('columns.product')}</th>
+                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">{t('columns.size')}</th>
+                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">{t('columns.quantity')}</th>
+                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">{t('columns.topping')}</th>
+                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">{t('columns.total')}</th>
+                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">{t('columns.time')}</th>
+                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">{t('columns.status')}</th>
+                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668] text-right">{t('columns.actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-black/5 text-sm">
@@ -234,7 +295,7 @@ export const OrdersView: React.FC<OrdersViewProps> = ({ db, onUpdateOrders, onTo
                     <td className="p-3 font-medium">{order.customer}</td>
                     <td className="p-3 text-[#6a3d29]">
                       {order.productName ?? order.items}
-                      {!order.productName && <div className="text-[10px] text-[#8b7668]">ÄÆ¡n cÅ©</div>}
+                      {!order.productName && <div className="text-[10px] text-[#8b7668]">{t('legacyOrder')}</div>}
                     </td>
                     <td className="p-3 font-mono-custom text-xs">{order.size ?? '-'}</td>
                     <td className="p-3 font-mono-custom text-xs">{order.quantity ?? '-'}</td>
@@ -243,23 +304,23 @@ export const OrdersView: React.FC<OrdersViewProps> = ({ db, onUpdateOrders, onTo
                     <td className="p-3 text-[#8b7668]">{order.time}</td>
                     <td className="p-3">
                       <span className={`inline-block text-[11px] px-2.5 py-1 rounded-full ${getBadgeClass(order.status)}`}>
-                        {order.status}
+                        {getStatusLabel(order.status)}
                       </span>
                     </td>
                     <td className="p-3 text-right">
                       <div className="flex items-center justify-end gap-1">
-                        {ORDER_STATUSES.map(item => (
+                        {STATUS_KEYS.map(statusKey => (
                           <button
-                            key={item}
-                            onClick={() => handleUpdateStatus(order.id, item)}
-                            disabled={order.status === item}
+                            key={statusKey}
+                            onClick={() => handleUpdateStatus(order.id, statusKey)}
+                            disabled={getStatusKey(order.status) === statusKey}
                             className={`px-2 py-1 text-[11px] rounded-lg border transition-all ${
-                              order.status === item
-                                ? `${getBadgeClass(item)} cursor-not-allowed`
+                              getStatusKey(order.status) === statusKey
+                                ? `${getBadgeClass(statusKey)} cursor-not-allowed`
                                 : 'border-black/10 hover:bg-[#fff8ef]'
                             }`}
                           >
-                            {item}
+                            {t(`status.${statusKey}`)}
                           </button>
                         ))}
                       </div>
@@ -269,7 +330,7 @@ export const OrdersView: React.FC<OrdersViewProps> = ({ db, onUpdateOrders, onTo
                 {filteredOrders.length === 0 && (
                   <tr>
                     <td colSpan={10} className="p-8 text-center text-[#8b7668] text-xs">
-                      KhÃ´ng tÃ¬m tháº¥y Ä‘Æ¡n hÃ ng nÃ o trÃ¹ng khá»›p
+                      {t('empty')}
                     </td>
                   </tr>
                 )}

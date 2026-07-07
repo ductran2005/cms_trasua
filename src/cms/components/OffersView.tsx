@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import React, { useState } from 'react';
 
 import { uid } from '../data';
@@ -10,6 +11,8 @@ interface OffersViewProps {
 }
 
 export const OffersView: React.FC<OffersViewProps> = ({ db, onUpdateOffers, onToast }) => {
+  const t = useTranslations('offers');
+  const tCommon = useTranslations('common');
   const [formId, setFormId] = useState('');
   const [formTitle, setFormTitle] = useState('');
   const [formDesc, setFormDesc] = useState('');
@@ -36,10 +39,10 @@ export const OffersView: React.FC<OffersViewProps> = ({ db, onUpdateOffers, onTo
   };
 
   const handleDelete = (id: string) => {
-    if (!window.confirm('Xác nhận xóa ưu đãi này?')) return;
+    if (!window.confirm(t('confirmDelete'))) return;
     const next = db.offers.filter(o => o.id !== id);
     onUpdateOffers(next);
-    onToast('Đã xóa ưu đãi');
+    onToast(t('deleted'));
     if (formId === id) handleClear();
   };
 
@@ -59,10 +62,10 @@ export const OffersView: React.FC<OffersViewProps> = ({ db, onUpdateOffers, onTo
     let nextOffers = [...db.offers];
     if (formId) {
       nextOffers = nextOffers.map(o => o.id === formId ? newOffer : o);
-      onToast('Đã cập nhật ưu đãi');
+      onToast(t('updated'));
     } else {
       nextOffers.push(newOffer);
-      onToast('Đã thêm ưu đãi mới');
+      onToast(t('added'));
     }
 
     onUpdateOffers(nextOffers);
@@ -73,23 +76,23 @@ export const OffersView: React.FC<OffersViewProps> = ({ db, onUpdateOffers, onTo
     <div>
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-light tracking-tight mb-2">Ưu đãi</h1>
-          <p className="text-[#8b7668]">Quản lý khuyến mãi hiển thị trên landing page.</p>
+          <h1 className="text-3xl font-light tracking-tight mb-2">{t('title')}</h1>
+          <p className="text-[#8b7668]">{t('description')}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="bg-white border border-black/8 rounded-3xl p-6 lg:col-span-8 shadow-sm">
-          <h2 className="text-xl mb-4">Danh sách ưu đãi</h2>
+          <h2 className="text-xl mb-4">{t('listTitle')}</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-black/5 bg-[#fff8ef]">
-                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">Tiêu đề ưu đãi</th>
-                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">Mô tả</th>
-                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">Bắt đầu / Kết thúc</th>
-                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">Trạng thái</th>
-                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668] text-right">Hành động</th>
+                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">{t('columns.title')}</th>
+                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">{t('columns.desc')}</th>
+                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">{t('columns.dates')}</th>
+                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">{t('columns.status')}</th>
+                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668] text-right">{t('columns.actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-black/5 text-sm">
@@ -102,22 +105,22 @@ export const OffersView: React.FC<OffersViewProps> = ({ db, onUpdateOffers, onTo
                     </td>
                     <td className="p-3">
                       <span className={`inline-block text-[11px] px-2.5 py-1 rounded-full ${o.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                        {o.active ? 'Đang chạy' : 'Tắt'}
+                        {o.active ? t('running') : t('off')}
                       </span>
                     </td>
                     <td className="p-3 text-right">
                       <div className="flex items-center justify-end gap-1.5">
-                        <button 
+                        <button
                           onClick={() => handleEdit(o)}
                           className="px-2.5 py-1 text-xs border border-black/10 rounded-lg hover:bg-[#fff8ef] transition-all"
                         >
-                          Sửa
+                          {tCommon('edit')}
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleDelete(o.id)}
                           className="px-2.5 py-1 text-xs border border-red-200 text-red-600 bg-red-50/20 rounded-lg hover:bg-red-50 transition-all"
                         >
-                          Xóa
+                          {tCommon('delete')}
                         </button>
                       </div>
                     </td>
@@ -129,25 +132,25 @@ export const OffersView: React.FC<OffersViewProps> = ({ db, onUpdateOffers, onTo
         </div>
 
         <div className="bg-white border border-black/8 rounded-3xl p-6 lg:col-span-4 shadow-sm self-start">
-          <h2 className="text-xl mb-4 pb-3 border-b border-black/5">Thêm / sửa ưu đãi</h2>
+          <h2 className="text-xl mb-4 pb-3 border-b border-black/5">{t('formTitle')}</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-[#6a3d29] font-medium">Tiêu đề *</label>
-              <input 
+              <label className="text-xs text-[#6a3d29] font-medium">{t('titleLabel')}</label>
+              <input
                 value={formTitle}
                 onChange={e => setFormTitle(e.target.value)}
-                placeholder="Mua 2 ly giảm 15%" 
+                placeholder={t('titlePlaceholder')}
                 className="w-full px-3.5 py-2 border border-black/10 rounded-xl outline-none focus:border-[#c98632] transition-all text-sm"
                 required
               />
             </div>
-            
+
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-[#6a3d29] font-medium">Mô tả chi tiết *</label>
-              <textarea 
+              <label className="text-xs text-[#6a3d29] font-medium">{t('descLabel')}</label>
+              <textarea
                 value={formDesc}
                 onChange={e => setFormDesc(e.target.value)}
-                placeholder="Áp dụng khi đặt qua ứng dụng..." 
+                placeholder={t('descPlaceholder')}
                 className="w-full px-3.5 py-2 border border-black/10 rounded-xl outline-none focus:border-[#c98632] transition-all text-sm min-h-[90px] resize-y"
                 required
               />
@@ -155,8 +158,8 @@ export const OffersView: React.FC<OffersViewProps> = ({ db, onUpdateOffers, onTo
 
             <div className="grid grid-cols-2 gap-3">
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-[#6a3d29] font-medium">Ngày bắt đầu</label>
-                <input 
+                <label className="text-xs text-[#6a3d29] font-medium">{t('startLabel')}</label>
+                <input
                   type="date"
                   value={formStart}
                   onChange={e => setFormStart(e.target.value)}
@@ -164,8 +167,8 @@ export const OffersView: React.FC<OffersViewProps> = ({ db, onUpdateOffers, onTo
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-[#6a3d29] font-medium">Ngày kết thúc</label>
-                <input 
+                <label className="text-xs text-[#6a3d29] font-medium">{t('endLabel')}</label>
+                <input
                   type="date"
                   value={formEnd}
                   onChange={e => setFormEnd(e.target.value)}
@@ -175,22 +178,22 @@ export const OffersView: React.FC<OffersViewProps> = ({ db, onUpdateOffers, onTo
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-[#6a3d29] font-medium">Trạng thái chạy</label>
-              <select 
+              <label className="text-xs text-[#6a3d29] font-medium">{t('statusLabel')}</label>
+              <select
                 value={formActive}
                 onChange={e => setFormActive(e.target.value)}
                 className="w-full px-3.5 py-2 border border-black/10 rounded-xl outline-none bg-white text-sm"
               >
-                <option value="true">Đang chạy</option>
-                <option value="false">Tắt ưu đãi</option>
+                <option value="true">{t('runningOption')}</option>
+                <option value="false">{t('offOption')}</option>
               </select>
             </div>
 
-            <button 
+            <button
               type="submit"
               className="w-full py-2.5 bg-[#daa94f] text-white rounded-xl hover:opacity-95 transition-all text-sm font-medium shadow-sm"
             >
-              Lưu ưu đãi
+              {t('save')}
             </button>
           </form>
         </div>

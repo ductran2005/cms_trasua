@@ -1,4 +1,5 @@
 import { Search, RotateCcw, Sparkles } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import React, { useState } from 'react';
 
 import { uid } from '../data';
@@ -11,9 +12,12 @@ interface ProductsViewProps {
 }
 
 export const ProductsView: React.FC<ProductsViewProps> = ({ db, onUpdateProducts, onToast }) => {
+  const t = useTranslations('products');
+  const tCommon = useTranslations('common');
+  const locale = useLocale();
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
-  
+
   // Form State
   const [formId, setFormId] = useState('');
   const [formName, setFormName] = useState('');
@@ -26,9 +30,7 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ db, onUpdateProducts
   const [formActive, setFormActive] = useState('true');
   const [isFormOpen, setIsFormOpen] = useState(false);
 
-  const formatMoney = (n: number) => {
-    return n.toLocaleString('vi-VN') + 'đ';
-  };
+  const formatMoney = (n: number) => `${n.toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN')}đ`;
 
   const handleEdit = (p: Product) => {
     setFormId(p.id);
@@ -61,17 +63,17 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ db, onUpdateProducts
   };
 
   const handleDelete = (id: string) => {
-    if (!window.confirm('Xác nhận xóa sản phẩm này?')) return;
+    if (!window.confirm(t('confirmDelete'))) return;
     const next = db.products.filter(p => p.id !== id);
     onUpdateProducts(next);
-    onToast('Đã xóa sản phẩm');
+    onToast(t('deleted'));
     if (formId === id) handleClose();
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formName || !formPriceM || !formPriceL || !formImage || !formDesc) {
-      alert('Vui lòng điền đầy đủ các thông tin bắt buộc.');
+      alert(t('invalidRequired'));
       return;
     }
 
@@ -79,7 +81,7 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ db, onUpdateProducts
     const priceL = parseFloat(formPriceL);
 
     if (isNaN(priceM) || isNaN(priceL)) {
-      alert('Giá sản phẩm phải là số hợp lệ.');
+      alert(t('invalidPrice'));
       return;
     }
 
@@ -98,10 +100,10 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ db, onUpdateProducts
     let nextProducts = [...db.products];
     if (formId) {
       nextProducts = nextProducts.map(p => p.id === formId ? newProduct : p);
-      onToast('Đã cập nhật sản phẩm');
+      onToast(t('updated'));
     } else {
       nextProducts.push(newProduct);
-      onToast('Đã thêm sản phẩm mới');
+      onToast(t('added'));
     }
 
     onUpdateProducts(nextProducts);
@@ -109,7 +111,7 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ db, onUpdateProducts
   };
 
   const filteredProducts = db.products.filter(p => {
-    const matchSearch = 
+    const matchSearch =
       p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.desc.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.tag.toLowerCase().includes(searchTerm.toLowerCase());
@@ -121,11 +123,11 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ db, onUpdateProducts
     <div>
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-light tracking-tight mb-2">Sản phẩm</h1>
-          <p className="text-[#8b7668]">Thêm, sửa, xóa trà sữa và đồng bộ dữ liệu lên landing page.</p>
+          <h1 className="text-3xl font-light tracking-tight mb-2">{t('title')}</h1>
+          <p className="text-[#8b7668]">{t('description')}</p>
         </div>
         <div className="flex gap-2">
-          <button 
+          <button
             onClick={() => {
               handleClear();
               setIsFormOpen(true);
@@ -136,7 +138,7 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ db, onUpdateProducts
             }}
             className="px-4 py-2 bg-[#daa94f] text-white rounded-xl hover:opacity-95 transition-all text-xs shadow-sm flex items-center gap-1 font-medium"
           >
-            + Thêm sản phẩm
+            {t('addProduct')}
           </button>
         </div>
       </div>
@@ -145,13 +147,13 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ db, onUpdateProducts
         {/* Table list column */}
         <div className={`bg-white border border-black/8 rounded-3xl p-6 shadow-sm transition-all duration-300 ${isFormOpen ? 'lg:col-span-8' : 'lg:col-span-12'}`}>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-            <h2 className="text-xl">Danh sách sản phẩm</h2>
+            <h2 className="text-xl">{t('listTitle')}</h2>
             {isFormOpen && (
-              <button 
+              <button
                 onClick={handleClear}
                 className="text-xs px-2.5 py-1.5 border border-black/10 rounded-xl hover:bg-amber-50/20 transition-all flex items-center gap-1.5"
               >
-                <RotateCcw className="w-3 h-3" /> Làm mới form
+                <RotateCcw className="w-3 h-3" /> {t('resetForm')}
               </button>
             )}
           </div>
@@ -161,10 +163,10 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ db, onUpdateProducts
               <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
                 <Search className="w-4 h-4" />
               </span>
-              <input 
+              <input
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                placeholder="Tìm sản phẩm..." 
+                placeholder={t('searchPlaceholder')}
                 className="w-full pl-10 pr-4 py-2 border border-black/10 rounded-xl outline-none bg-amber-50/5 focus:border-[#c98632] transition-all text-sm"
               />
             </div>
@@ -173,7 +175,7 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ db, onUpdateProducts
               onChange={e => setCategoryFilter(e.target.value)}
               className="px-3 py-2 border border-black/10 rounded-xl outline-none bg-white text-sm"
             >
-              <option value="">Tất cả danh mục</option>
+              <option value="">{t('allCategories')}</option>
               {db.categories.map((c, i) => (
                 <option key={i} value={c.name}>{c.name}</option>
               ))}
@@ -184,22 +186,22 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ db, onUpdateProducts
             <table className="w-full text-left border-collapse min-w-[650px]">
               <thead>
                 <tr className="border-b border-black/5 bg-[#fff8ef]">
-                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">Ảnh</th>
-                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">Tên món</th>
-                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">Danh mục</th>
-                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">Giá</th>
-                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">Tag</th>
-                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">Trạng thái</th>
-                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668] text-right">Hành động</th>
+                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">{t('columns.image')}</th>
+                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">{t('columns.name')}</th>
+                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">{t('columns.category')}</th>
+                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">{t('columns.price')}</th>
+                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">{t('columns.tag')}</th>
+                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668]">{t('columns.status')}</th>
+                  <th className="p-3 text-[11px] uppercase tracking-wider text-[#8b7668] text-right">{t('columns.actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-black/5 text-sm">
                 {filteredProducts.map((p, idx) => (
                   <tr key={idx} className="hover:bg-amber-50/10 transition-all">
                     <td className="p-3">
-                      <img 
-                        src={p.image} 
-                        alt={p.name} 
+                      <img
+                        src={p.image}
+                        alt={p.name}
                         className="w-12 h-12 object-cover rounded-xl border border-black/5"
                         referrerPolicy="no-referrer"
                       />
@@ -218,22 +220,22 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ db, onUpdateProducts
                     </td>
                     <td className="p-3">
                       <span className={`inline-block text-[11px] px-2.5 py-1 rounded-full ${p.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                        {p.active ? 'Đang bán' : 'Ẩn'}
+                        {p.active ? t('selling') : t('hidden')}
                       </span>
                     </td>
                     <td className="p-3 text-right">
                       <div className="flex items-center justify-end gap-1.5">
-                        <button 
+                        <button
                           onClick={() => handleEdit(p)}
                           className="px-2.5 py-1 text-xs border border-black/10 rounded-lg hover:bg-[#fff8ef] transition-all"
                         >
-                          Sửa
+                          {tCommon('edit')}
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleDelete(p.id)}
                           className="px-2.5 py-1 text-xs border border-red-200 text-red-600 bg-red-50/20 rounded-lg hover:bg-red-50 transition-all"
                         >
-                          Xóa
+                          {tCommon('delete')}
                         </button>
                       </div>
                     </td>
@@ -242,7 +244,7 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ db, onUpdateProducts
                 {filteredProducts.length === 0 && (
                   <tr>
                     <td colSpan={7} className="p-8 text-center text-[#8b7668] text-xs">
-                      Không tìm thấy sản phẩm nào trùng khớp
+                      {t('empty')}
                     </td>
                   </tr>
                 )}
@@ -255,34 +257,34 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ db, onUpdateProducts
         {isFormOpen && (
           <div id="productFormStart" className="bg-white border border-black/8 rounded-3xl p-6 lg:col-span-4 shadow-sm self-start animate-fade-in">
             <div className="flex items-center justify-between mb-4 border-b border-black/5 pb-3">
-              <h2 className="text-xl">{formId ? 'Sửa sản phẩm' : 'Thêm sản phẩm'}</h2>
+              <h2 className="text-xl">{formId ? t('editTitle') : t('addTitle')}</h2>
               <div className="flex items-center gap-2">
-                <button 
-                  type="button" 
-                  onClick={handleClear} 
+                <button
+                  type="button"
+                  onClick={handleClear}
                   className="text-xs text-[#8b7668] hover:underline"
                 >
-                  Nhập lại
+                  {t('clearForm')}
                 </button>
                 <span className="text-gray-300">|</span>
-                <button 
-                  type="button" 
-                  onClick={handleClose} 
+                <button
+                  type="button"
+                  onClick={handleClose}
                   className="text-xs text-red-600 hover:underline font-medium"
                 >
-                  Đóng
+                  {t('close')}
                 </button>
               </div>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="flex flex-col gap-1">
-                <label id="productFormNameLabel" htmlFor="productFormName" className="text-xs text-[#6a3d29] font-medium">Tên món *</label>
-                <input 
+                <label id="productFormNameLabel" htmlFor="productFormName" className="text-xs text-[#6a3d29] font-medium">{t('nameLabel')}</label>
+                <input
                   id="productFormName"
                   value={formName}
                   onChange={e => setFormName(e.target.value)}
-                  placeholder="Trà sữa đường đen" 
+                  placeholder={t('namePlaceholder')}
                   className="w-full px-3.5 py-2 border border-black/10 rounded-xl outline-none focus:border-[#c98632] transition-all text-sm"
                   required
                 />
@@ -290,8 +292,8 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ db, onUpdateProducts
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs text-[#6a3d29] font-medium">Danh mục *</label>
-                  <select 
+                  <label className="text-xs text-[#6a3d29] font-medium">{t('categoryLabel')}</label>
+                  <select
                     value={formCategory}
                     onChange={e => setFormCategory(e.target.value)}
                     className="w-full px-3.5 py-2 border border-black/10 rounded-xl outline-none bg-white text-sm"
@@ -303,11 +305,11 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ db, onUpdateProducts
                   </select>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs text-[#6a3d29] font-medium">Tag (ví dụ: Bán chạy)</label>
-                  <input 
+                  <label className="text-xs text-[#6a3d29] font-medium">{t('tagLabel')}</label>
+                  <input
                     value={formTag}
                     onChange={e => setFormTag(e.target.value)}
-                    placeholder="Bán chạy" 
+                    placeholder={t('tagPlaceholder')}
                     className="w-full px-3.5 py-2 border border-black/10 rounded-xl outline-none focus:border-[#c98632] transition-all text-sm"
                   />
                 </div>
@@ -315,23 +317,23 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ db, onUpdateProducts
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs text-[#6a3d29] font-medium">Giá size M (đ) *</label>
-                  <input 
+                  <label className="text-xs text-[#6a3d29] font-medium">{t('priceMLabel')}</label>
+                  <input
                     type="number"
                     value={formPriceM}
                     onChange={e => setFormPriceM(e.target.value)}
-                    placeholder="39000" 
+                    placeholder="39000"
                     className="w-full px-3.5 py-2 border border-black/10 rounded-xl outline-none focus:border-[#c98632] transition-all text-sm font-mono-custom"
                     required
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs text-[#6a3d29] font-medium">Giá size L (đ) *</label>
-                  <input 
+                  <label className="text-xs text-[#6a3d29] font-medium">{t('priceLLabel')}</label>
+                  <input
                     type="number"
                     value={formPriceL}
                     onChange={e => setFormPriceL(e.target.value)}
-                    placeholder="49000" 
+                    placeholder="49000"
                     className="w-full px-3.5 py-2 border border-black/10 rounded-xl outline-none focus:border-[#c98632] transition-all text-sm font-mono-custom"
                     required
                   />
@@ -339,52 +341,52 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ db, onUpdateProducts
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-[#6a3d29] font-medium">URL hình ảnh *</label>
-                <input 
+                <label className="text-xs text-[#6a3d29] font-medium">{t('imageLabel')}</label>
+                <input
                   value={formImage}
                   onChange={e => setFormImage(e.target.value)}
-                  placeholder="https://images.unsplash.com/..." 
+                  placeholder="https://images.unsplash.com/..."
                   className="w-full px-3.5 py-2 border border-black/10 rounded-xl outline-none focus:border-[#c98632] transition-all text-sm"
                   required
                 />
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-[#6a3d29] font-medium">Mô tả chi tiết *</label>
-                <textarea 
+                <label className="text-xs text-[#6a3d29] font-medium">{t('descLabel')}</label>
+                <textarea
                   value={formDesc}
                   onChange={e => setFormDesc(e.target.value)}
-                  placeholder="Trà sữa béo thơm, nhiều trân châu ngọt..." 
+                  placeholder={t('descPlaceholder')}
                   className="w-full px-3.5 py-2 border border-black/10 rounded-xl outline-none focus:border-[#c98632] transition-all text-sm min-h-[90px] resize-y"
                   required
                 />
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-[#6a3d29] font-medium">Trạng thái bán</label>
-                <select 
+                <label className="text-xs text-[#6a3d29] font-medium">{t('statusLabel')}</label>
+                <select
                   value={formActive}
                   onChange={e => setFormActive(e.target.value)}
                   className="w-full px-3.5 py-2 border border-black/10 rounded-xl outline-none bg-white text-sm"
                 >
-                  <option value="true">Đang bán</option>
-                  <option value="false">Ẩn (Ngừng kinh doanh)</option>
+                  <option value="true">{t('sellingOption')}</option>
+                  <option value="false">{t('hiddenOption')}</option>
                 </select>
               </div>
 
               <div className="grid grid-cols-2 gap-3 mt-4">
-                <button 
+                <button
                   type="button"
                   onClick={handleClose}
                   className="w-full py-2.5 border border-black/10 text-gray-700 rounded-xl hover:bg-gray-50 transition-all text-sm font-medium"
                 >
-                  Hủy
+                  {t('cancel')}
                 </button>
-                <button 
+                <button
                   type="submit"
                   className="w-full py-2.5 bg-[#daa94f] text-white rounded-xl hover:opacity-95 transition-all text-sm font-medium shadow-sm"
                 >
-                  Lưu sản phẩm
+                  {t('save')}
                 </button>
               </div>
             </form>

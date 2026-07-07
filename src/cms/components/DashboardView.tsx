@@ -1,4 +1,5 @@
 import { DollarSign, ShoppingBag, Layers, Award } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import React from 'react';
 
 import { type AppDatabase } from '../types';
@@ -10,15 +11,30 @@ interface DashboardViewProps {
   onLogout: () => void;
 }
 
+const STATUS_KEYS = ['preparing', 'delivering', 'completed', 'canceled'] as const;
+type StatusKey = (typeof STATUS_KEYS)[number];
+
+function getStatusKey(status: string): StatusKey {
+  if (STATUS_KEYS.includes(status as StatusKey)) return status as StatusKey;
+
+  const normalized = status.toLowerCase();
+  if (normalized.includes('giao')) return 'delivering';
+  if (normalized.includes('huy') || normalized.includes('hủy') || normalized.includes('cancel')) return 'canceled';
+  if (normalized.includes('ho') || normalized.includes('xong') || normalized.includes('complete')) return 'completed';
+  return 'preparing';
+}
+
 export const DashboardView: React.FC<DashboardViewProps> = ({ db, onNavigate, onReset, onLogout }) => {
-  const formatMoney = (n: number) => {
-    return n.toLocaleString('vi-VN') + 'đ';
-  };
+  const t = useTranslations('dashboard');
+  const tOrders = useTranslations('orders');
+  const locale = useLocale();
+
+  const formatMoney = (n: number) => `${n.toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN')}đ`;
 
   const revenueToday = db.orders.reduce((sum, o) => sum + o.total, 0);
   const ordersToday = db.orders.length;
   const productsCount = db.products.filter(p => p.active).length;
-  const bestSeller = db.products[0]?.name || "Trà sữa";
+  const bestSeller = db.products[0]?.name || t('defaultBestSeller');
 
   const chartData = [
     { label: 'T2', val: 1.0 },
@@ -31,34 +47,36 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ db, onNavigate, on
   ];
 
   const getBadgeClass = (status: string) => {
-    switch (status) {
-      case 'Hoàn thành': return 'bg-[#e8f5df] text-[#557e3c]';
-      case 'Đang giao': return 'bg-[#e7f0fb] text-[#477eb8]';
-      case 'Đang pha': return 'bg-[#fff3d5] text-[#b57620]';
-      case 'Đã hủy': return 'bg-[#fff0ee] text-[#b94d3f]';
+    switch (getStatusKey(status)) {
+      case 'completed': return 'bg-[#e8f5df] text-[#557e3c]';
+      case 'delivering': return 'bg-[#e7f0fb] text-[#477eb8]';
+      case 'preparing': return 'bg-[#fff3d5] text-[#b57620]';
+      case 'canceled': return 'bg-[#fff0ee] text-[#b94d3f]';
       default: return 'bg-gray-100 text-gray-700';
     }
   };
+
+  const getStatusLabel = (status: string) => tOrders(`status.${getStatusKey(status)}`);
 
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-light tracking-tight mb-2">Dashboard</h1>
-          <p className="text-[#8b7668]">Quản trị menu, đơn hàng và nội dung landing page AURATEA.</p>
+          <h1 className="text-3xl font-light tracking-tight mb-2">{t('title')}</h1>
+          <p className="text-[#8b7668]">{t('description')}</p>
         </div>
         <div className="flex gap-2 flex-wrap">
-          <button 
+          <button
             onClick={onReset}
             className="px-4 py-2 border border-black/10 rounded-xl hover:bg-white transition-all text-xs"
           >
-            Reset dữ liệu mẫu
+            {t('resetData')}
           </button>
-          <button 
+          <button
             onClick={onLogout}
             className="px-4 py-2 bg-[#321b12] text-white rounded-xl hover:opacity-90 transition-all text-xs"
           >
-            Đăng xuất
+            {t('logout')}
           </button>
         </div>
       </div>
@@ -70,9 +88,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ db, onNavigate, on
             <DollarSign className="w-6 h-6" />
           </div>
           <div>
-            <div className="text-[#8b7668] text-xs">Doanh thu hôm nay</div>
+            <div className="text-[#8b7668] text-xs">{t('revenueToday')}</div>
             <div className="text-2xl mt-1">{formatMoney(revenueToday)}</div>
-            <div className="text-[#4c8a3f] text-xs mt-1">↑ 18% so với hôm qua</div>
+            <div className="text-[#4c8a3f] text-xs mt-1">{t('revenueUp')}</div>
           </div>
         </div>
 
@@ -82,9 +100,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ db, onNavigate, on
             <ShoppingBag className="w-6 h-6" />
           </div>
           <div>
-            <div className="text-[#8b7668] text-xs">Đơn hôm nay</div>
+            <div className="text-[#8b7668] text-xs">{t('ordersToday')}</div>
             <div className="text-2xl mt-1">{ordersToday}</div>
-            <div className="text-[#4c8a3f] text-xs mt-1">↑ 12% so với hôm qua</div>
+            <div className="text-[#4c8a3f] text-xs mt-1">{t('ordersUp')}</div>
           </div>
         </div>
 
@@ -94,9 +112,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ db, onNavigate, on
             <Layers className="w-6 h-6" />
           </div>
           <div>
-            <div className="text-[#8b7668] text-xs">Sản phẩm</div>
+            <div className="text-[#8b7668] text-xs">{t('products')}</div>
             <div className="text-2xl mt-1">{productsCount}</div>
-            <div className="text-[#4c8a3f] text-xs mt-1">Đang hoạt động</div>
+            <div className="text-[#4c8a3f] text-xs mt-1">{t('activeNow')}</div>
           </div>
         </div>
 
@@ -106,24 +124,24 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ db, onNavigate, on
             <Award className="w-6 h-6" />
           </div>
           <div>
-            <div className="text-[#8b7668] text-xs">Best Seller</div>
+            <div className="text-[#8b7668] text-xs">{t('bestSeller')}</div>
             <div className="text-lg mt-1 truncate max-w-[150px]" title={bestSeller}>{bestSeller}</div>
-            <div className="text-[#4c8a3f] text-xs mt-1">Yêu thích nhất</div>
+            <div className="text-[#4c8a3f] text-xs mt-1">{t('favorite')}</div>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Doanh thu tuần */}
+        {/* Weekly revenue */}
         <div className="bg-white border border-black/8 rounded-3xl p-6 lg:col-span-7 shadow-sm">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl">Doanh thu tuần này</h2>
-            <span className="text-xs px-2.5 py-1 bg-[#fffdf8] border border-black/5 rounded-lg text-[#8b7668]">7 ngày qua</span>
+            <h2 className="text-xl">{t('weeklyRevenue')}</h2>
+            <span className="text-xs px-2.5 py-1 bg-[#fffdf8] border border-black/5 rounded-lg text-[#8b7668]">{t('last7Days')}</span>
           </div>
           <div className="h-[240px] flex items-end gap-3 px-2 pt-6 pb-2 border border-black/5 rounded-2xl bg-gradient-to-b from-white to-[#fff8ef]">
             {chartData.map((d, idx) => (
               <div key={idx} className="flex-1 flex flex-col justify-end gap-2 h-full items-center">
-                <div 
+                <div
                   className="w-full rounded-t-xl bg-gradient-to-t from-[#c98632] to-[#daa94f] shadow-sm hover:brightness-105 transition-all"
                   style={{ height: `${(d.val / 3.4) * 100}%` }}
                 />
@@ -133,15 +151,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ db, onNavigate, on
           </div>
         </div>
 
-        {/* Đơn hàng gần đây */}
+        {/* Recent orders */}
         <div className="bg-white border border-black/8 rounded-3xl p-6 lg:col-span-5 shadow-sm">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl">Đơn hàng gần đây</h2>
-            <button 
+            <h2 className="text-xl">{t('recentOrders')}</h2>
+            <button
               onClick={() => onNavigate('orders')}
               className="text-xs px-2.5 py-1 bg-[#fffdf8] border border-black/5 rounded-lg text-[#8b7668] hover:bg-amber-50 transition-all"
             >
-              Xem tất cả
+              {t('viewAll')}
             </button>
           </div>
           <div className="space-y-3">
@@ -152,12 +170,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ db, onNavigate, on
                   <div className="text-xs text-[#8b7668] mt-0.5">{o.time} · {o.items} · {formatMoney(o.total)}</div>
                 </div>
                 <span className={`px-2 py-1 rounded-full text-[10px] tracking-wide ${getBadgeClass(o.status)}`}>
-                  {o.status}
+                  {getStatusLabel(o.status)}
                 </span>
               </div>
             ))}
             {db.orders.length === 0 && (
-              <div className="text-center py-8 text-[#8b7668] text-xs">Không có đơn hàng nào</div>
+              <div className="text-center py-8 text-[#8b7668] text-xs">{t('empty')}</div>
             )}
           </div>
         </div>
