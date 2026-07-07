@@ -1,0 +1,6 @@
+{
+  "name": "AURATEA CMS",
+  "description": "Hệ thống quản trị (CMS) dành riêng cho thương hiệu trà sữa AURATEA. Quản lý sản phẩm, danh mục, topping, đơn hàng, nguyên vật liệu, nhân viên và nội dung trang chủ.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
