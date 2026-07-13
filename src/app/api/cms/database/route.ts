@@ -49,7 +49,7 @@ export async function GET() {
     "https://images.unsplash.com/photo-1558857563-b371033873b8?q=80&w=900&auto=format&fit=crop": "/milktea-assets/clean-brown-sugar-cutout.png",
     "https://images.unsplash.com/photo-1515823064-d6e0c04616a7?q=80&w=900&auto=format&fit=crop": "/milktea-assets/clean-matcha-cutout.png",
     "https://images.unsplash.com/photo-1615478503562-ec2d8aa0e24e?q=80&w=900&auto=format&fit=crop": "/milktea-assets/clean-taro-cutout.png",
-    "https://images.unsplash.com/photo-1499638673689-79a0b5115d87?q=80&w=900&auto=format&fit=crop": "/milktea-assets/clean-oolong-peach-cutout.png"
+    "https://images.unsplash.com/photo-1499638673689-79a0b5115d87?q=80&w=900&auto=format&fit=crop": "/milktea-assets/clean-oolong-peach-cutout-v2.png"
   };
 
   if (document.products && Array.isArray(document.products)) {

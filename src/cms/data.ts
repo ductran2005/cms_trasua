@@ -51,7 +51,7 @@ export const initialSampleData: AppDatabase = {
       tag: "Fresh",
       priceM: 43000,
       priceL: 53000,
-      image: "/milktea-assets/clean-oolong-peach-cutout.png",
+      image: "/milktea-assets/clean-oolong-peach-cutout-v2.png",
       desc: "Trà ô long thơm nhẹ kết hợp đào tươi, thanh mát và dễ uống.",
       active: true
     }
@@ -90,7 +90,7 @@ export const initialSampleData: AppDatabase = {
     { id: 'm1', name: "Trà sữa đường đen", url: "/milktea-assets/clean-brown-sugar-cutout.png" },
     { id: 'm2', name: "Matcha kem sữa", url: "/milktea-assets/clean-matcha-cutout.png" },
     { id: 'm3', name: "Khoai môn mây tím", url: "/milktea-assets/clean-taro-cutout.png" },
-    { id: 'm4', name: "Ô long đào", url: "/milktea-assets/clean-oolong-peach-cutout.png" }
+    { id: 'm4', name: "Ô long đào", url: "/milktea-assets/clean-oolong-peach-cutout-v2.png" }
   ],
   content: {
     heroTitleVi: "Trà thơm đúng vị, ngọt vừa đúng gu.",
@@ -131,7 +131,7 @@ export const loadDatabase = (): AppDatabase => {
       "https://images.unsplash.com/photo-1558857563-b371033873b8?q=80&w=900&auto=format&fit=crop": "/milktea-assets/clean-brown-sugar-cutout.png",
       "https://images.unsplash.com/photo-1515823064-d6e0c04616a7?q=80&w=900&auto=format&fit=crop": "/milktea-assets/clean-matcha-cutout.png",
       "https://images.unsplash.com/photo-1615478503562-ec2d8aa0e24e?q=80&w=900&auto=format&fit=crop": "/milktea-assets/clean-taro-cutout.png",
-      "https://images.unsplash.com/photo-1499638673689-79a0b5115d87?q=80&w=900&auto=format&fit=crop": "/milktea-assets/clean-oolong-peach-cutout.png"
+      "https://images.unsplash.com/photo-1499638673689-79a0b5115d87?q=80&w=900&auto=format&fit=crop": "/milktea-assets/clean-oolong-peach-cutout-v2.png"
     };
 
     if (data.products && Array.isArray(data.products)) {
