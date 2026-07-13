@@ -111,7 +111,7 @@ export function LandingPage({ data, locale }: LandingPageProps) {
               <img
                 src={featuredProduct.image}
                 alt={featuredProduct.name}
-                className="absolute inset-0 h-full w-full object-cover"
+                className="absolute inset-0 h-full w-full object-cover brightness-[0.9] contrast-[1.12] saturate-[1.08] drop-shadow-[0_18px_24px_rgba(50,27,18,0.18)]"
                 referrerPolicy="no-referrer"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#321b12]/70 via-transparent to-transparent" />
@@ -153,7 +153,7 @@ export function LandingPage({ data, locale }: LandingPageProps) {
                 <img
                   src={product.image}
                   alt={product.name}
-                  className="h-full w-full object-cover transition duration-500 hover:scale-105"
+                  className="h-full w-full object-cover brightness-[0.9] contrast-[1.12] saturate-[1.08] drop-shadow-[0_14px_18px_rgba(50,27,18,0.16)] transition duration-500 hover:scale-105 hover:brightness-100"
                   referrerPolicy="no-referrer"
                 />
               </div>
